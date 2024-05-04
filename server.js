@@ -1,27 +1,56 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+const axios = require('axios');
 
-// Middleware to check if the user is a power user
-function checkPowerUser(req, res, next) {
-    // This is a placeholder; implement your actual logic here
-    // For example, you could check a token or a user property
-    if (req.query.isPowerUser === 'true') {
-        next();
-    } else {
-        res.status(403).send('Access denied. You are not a power user.');
-    }
+
+app.use(express.json()); // For parsing application/json
+
+async function fetchHighestNonPB(req, res, next){
+
 }
 
-// Endpoint for power users
-app.get('/power-users', checkPowerUser, async (req, res) => {
-    res.send('Welcome, Power User!');
-});
+// Endpoint to start
+app.get('/start/:fid', async (req, res) => {
+    const pbURL = 'https://api.warpcast.com/v2/power-badge-users';
+    const userFid = parseInt(req.params.fid); // Accessing the fid parameter from the URL
+    let powerBadgeUsers; 
+    try {
+        const response = await axios.get(pbURL);
+        powerBadgeUsers = response.data.result.fids; // Adjusting path to match actual response structure
+    } catch (error) {
+        console.error('Error fetching power badge users:', error);
+        res.status(500).send('Failed to fetch power badge users');
+    }
+    console.log(powerBadgeUsers);
+    let isPowerUser = powerBadgeUsers.includes(userFid);
+    let openrankURL 
 
-// Endpoint for non-power badge users
-app.get('/non-power-users', async (req, res) => {
-    // Check your OpenRank 
-    res.send('Hello, Non-Power badge User!');
+    // If power badge user, fetch engagement scores 
+    isPowerUser = true
+    if (isPowerUser){
+        console.log("Fid", userFid, "is a poweruser");
+        openrankURL = 'https://graph.cast.k3l.io/scores/personalized/engagement/fids?k=2&limit=4999';
+        try {
+            const engagementScores = await axios.post(openrankURL, [userFid], {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });    
+            console.log(engagementScores.data.result)   
+            // Filter out power badge users from the engagement scores
+            const filteredScores = engagementScores.data.result.filter(score => 
+                !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
+            );
+            res.json(filteredScores[5]);
+        } catch (error) {
+            console.error('Error fetching power badge users:', error);
+            res.status(500).send('Failed to fetch power badge users');
+        }
+    } else {
+        console.log("Fid", userFid, "is not a poweruser");
+    }
+    res.send('Welcome, Power User!');
 });
 
 app.listen(port, () => {
