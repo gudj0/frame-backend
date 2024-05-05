@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 // import { db } from './firebase.js';
 const app = express();
-const port = process.env.PORT || 3000;  // Ensure using PORT from environment in production
+const port = 3000;  // Ensure using PORT from environment in production
 import axios from 'axios';
 import { init, fetchQuery } from "@airstack/node";
-console.log("### API KEY:", process.env.AIRSTACK_API_KEY)
 init(process.env.AIRSTACK_API_KEY)
 
 app.use(express.json()); // For parsing application/json
