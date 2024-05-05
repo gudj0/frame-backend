@@ -1,5 +1,5 @@
-const express = require('express');
-const { db } = require('./firebase');
+import express from 'express';
+import { db } from './firebase';
 const app = express();
 const port = 3000;
 
