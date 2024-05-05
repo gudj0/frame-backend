@@ -29,9 +29,9 @@ app.get('/user-relevant-cast/:fid', async (req, res) => {
     const userDoc = db.collection('openrank-farhack').doc(req.params.fid);
     const userDocData = (await userDoc.get())?.data();
     if (userDocData && userDocData.cast) {
-        res.json(userDocData);
+        return res.json(userDocData);
     } else {
-        res.json({loading: true});
+        return res.json({loading: true});
     }
 });
 
