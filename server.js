@@ -1,4 +1,6 @@
-const express = require('express');
+import express from 'express';
+import cors from 'cors';
+import { db } from './firebase.js';
 const app = express();
 const port = 3000;
 const axios = require('axios');
@@ -7,6 +9,7 @@ console.log("### API KEY:", process.env.AIRSTACK_API_KEY)
 init(process.env.AIRSTACK_API_KEY)
 
 app.use(express.json()); // For parsing application/json
+app.use(cors());
 
 // GraphQL query as a string
 const graphqlQuery = `
@@ -100,6 +103,16 @@ app.get('/start/:fid', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+app.get('/user-relevant-cast/:fid', async (req, res) => {
+    const userDoc = db.collection('openrank-farhack').doc(req.params.fid);
+    const userDocData = (await userDoc.get())?.data();
+    if (userDocData && userDocData.cast) {
+        return res.json(userDocData);
+    } else {
+        return res.json({loading: true});
+    }
+});
+
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${port}`);
 });
