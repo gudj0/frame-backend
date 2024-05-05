@@ -32,6 +32,7 @@ const graphqlQuery = `
 
 // Endpoint to start
 app.get('/start/:fid', async (req, res) => {
+    console.log("## Starting server....")
     const pbURL = 'https://api.warpcast.com/v2/power-badge-users';
     const userFid = parseInt(req.params.fid); // Accessing the fid parameter from the URL
     let powerBadgeUsers; 
