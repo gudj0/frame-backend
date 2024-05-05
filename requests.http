@@ -1,0 +1,13 @@
+
+# @name GetNonPowerBadgeUser
+GET {{hostname}}/start/309
+
+###
+
+# @name GetPowerBadgeUser
+GET {{hostname}}/start/3
+
+### 
+
+@hostname=http://localhost:3000
+# @hostname https://frame-backend-production.up.railway.app
