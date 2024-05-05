@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@airstack/node": "^0.0.7",
     "axios": "^1.6.8",
     "express": "^4.19.2"
   }

@@ -2,13 +2,30 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const axios = require('axios');
-
+const { init, fetchQuery } = require("@airstack/node");
+console.log("### API KEY:", process.env.AIRSTACK_API_KEY)
+init(process.env.AIRSTACK_API_KEY)
 
 app.use(express.json()); // For parsing application/json
 
-async function fetchHighestNonPB(req, res, next){
+// GraphQL query as a string
+const graphqlQuery = `
+  query MyQuery($fids: [Identity!], $startTime: Time) {
+    FarcasterCasts(
+      input: {filter: {castedBy: {_in: $fids}, castedAtTimestamp: {_gte: $startTime}}, blockchain: ALL}
+    ) {
+      Cast {
+        embeds
+        text
+        channel {
+          name
+        }
+        fid
+      }
+    }
+  }
+`;
 
-}
 
 // Endpoint to start
 app.get('/start/:fid', async (req, res) => {
@@ -41,11 +58,20 @@ app.get('/start/:fid', async (req, res) => {
             );
             console.log("Length of filtered scored:", filteredScores.length);
             const randomNumber = Math.floor(Math.random() * filteredScores.length) + 2;
-            const fids = filteredScores.map(item => item.fid);
+            const fids = filteredScores.map(item => `fc_fid:${item.fid}`);
             
-            console.log(fids.slice(0,100).sort((a, b) => a - b));
-            console.log(fids.slice(100,200).sort((a, b) => a - b));
-            console.log(fids.slice(200,300).sort((a, b) => a - b));
+            const now = new Date(); // Current date and time
+            const fortyEightHoursAgo = new Date(now.getTime() - (48 * 60 * 60 * 1000)); // Subtract 48 hours in milliseconds
+            // Convert to ISO string for use in APIs
+            const startTime = fortyEightHoursAgo.toISOString();
+            const variables = {
+                fids: fids,
+                startTime: startTime
+            };
+            const data = await fetchQuery(graphqlQuery, variables);
+            const casts = data.data.FarcasterCasts.Cast;
+            console.log(casts);
+            console.log("length of casts:", casts.length)
             res.json(filteredScores[randomNumber]); // we select 3 as to make some randomness
         } catch (error) {
             console.error('Error fetching power badge users:', error);
