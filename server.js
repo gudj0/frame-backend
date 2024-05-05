@@ -47,9 +47,13 @@ app.get('/start/:fid', async (req, res) => {
     // If power badge user, fetch engagement scores 
     // isPowerUser = true 
         try {
-            const openRankResponse = await axios.post(globalRankUrl, [userFid]);
-            console.log(`openRankResult: ${openRankResponse}`)
-            const openRank = openRankResponse?.result[0]?.response
+            const openRankResponse = await axios.post(globalRankUrl, [userFid], {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log(`openRankResult: ${JSON.stringify(openRankResponse)}`)
+            const openRank = openRankResponse?.result?.[0]?.response
             const engagementScores = await axios.post(openrankURL, [userFid], {
                 headers: {
                     'Content-Type': 'application/json'
