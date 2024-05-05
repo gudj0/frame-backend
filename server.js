@@ -5,7 +5,7 @@ import redis from 'redis';
 const app = express();
 const port = process.env.PORT || 3000;  // Ensure using PORT from environment in production
 console.log(`client redis url: ${process.env.REDIS_URL}`)
-const client = redis.createClient(process.env.REDIS_URL);
+const client = redis.createClient({url: process.env.REDIS_URL});
 await client.connect();
 console.log(` / client open: ${client.isOpen}`);
 import axios from 'axios';
