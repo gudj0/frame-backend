@@ -5,6 +5,7 @@ import redis from 'redis';
 const app = express();
 const port = process.env.PORT || 3000;  // Ensure using PORT from environment in production
 const client = redis.createClient(process.env.REDIS_PRIVATE_URL);
+await client.connect();
 console.log(`client redis url: ${process.env.REDIS_PRIVATE_URL} / client open: ${client.isOpen}`);
 import axios from 'axios';
 import { init, fetchQuery } from "@airstack/node";
