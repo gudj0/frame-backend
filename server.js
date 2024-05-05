@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import { db } from './firebase.js';
+// import { db } from './firebase.js';
 const app = express();
 const port = 3000;
-const axios = require('axios');
-const { init, fetchQuery } = require("@airstack/node");
+import axios from 'axios';
+import { init, fetchQuery } from "@airstack/node";
 console.log("### API KEY:", process.env.AIRSTACK_API_KEY)
 init(process.env.AIRSTACK_API_KEY)
 
