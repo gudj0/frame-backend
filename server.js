@@ -90,7 +90,7 @@ app.get('/start/:fid', async (req, res) => {
             let finalFid= fidsFromCasts[randomNumber]
             const matchingObject = filteredScores.find(score => score.fid == finalFid);
             console.log({...matchingObject, openRank: openRank, powerBadge: true})
-            res.json({...matchingObject, openRank: openRank, powerBadge: true})
+            res.json({...matchingObject, user: { openRank: openRank, powerBadge: true}})
     
         } catch (error) {
             console.error('Error fetching power badge users:', error);
