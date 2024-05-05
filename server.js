@@ -5,6 +5,7 @@ import redis from 'redis';
 const app = express();
 const port = process.env.PORT || 3000;  // Ensure using PORT from environment in production
 const client = redis.createClient(process.env.REDIS_PRIVATE_URL);
+console.log(`client redis url: ${process.env.REDIS_PRIVATE_URL}`);
 import axios from 'axios';
 import { init, fetchQuery } from "@airstack/node";
 init(process.env.AIRSTACK_API_KEY)
@@ -104,6 +105,7 @@ const processFid = async (fid) => {
 // Endpoint to start
 app.get('/start/:fid', async (req, res) => {
     console.log("### Starting server....")
+    console.log(`client open? ${client.isOpen}`);
     const userFid = parseInt(req.params.fid); // Accessing the fid parameter from the URL
     const status = await client.get(`status:${userFid}`);
     console.log(`STATUS RETURNED: ${status}`);
