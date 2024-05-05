@@ -1,4 +1,5 @@
 const express = require('express');
+const { db } = require('./firebase');
 const app = express();
 const port = 3000;
 
@@ -22,6 +23,16 @@ app.get('/power-users', checkPowerUser, async (req, res) => {
 app.get('/non-power-users', async (req, res) => {
     // Check your OpenRank 
     res.send('Hello, Non-Power badge User!');
+});
+
+app.get('/user-relevant-cast/:fid', async (req, res) => {
+    const userDoc = db.collection('openrank-farhack').doc(req.params.fid);
+    const userDocData = (await userDoc.get())?.data();
+    if (userDocData && userDocData.cast) {
+        res.json(userDocData);
+    } else {
+        res.json({loading: true});
+    }
 });
 
 app.listen(port, () => {
