@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors';
+import redis from 'redis';
 // import { db } from './firebase.js';
 const app = express();
 const port = process.env.PORT || 3000;  // Ensure using PORT from environment in production
+const client = redis.createClient(process.env.REDIS_PRIVATE_URL);
 import axios from 'axios';
 import { init, fetchQuery } from "@airstack/node";
 init(process.env.AIRSTACK_API_KEY)
@@ -28,18 +30,15 @@ const graphqlQuery = `
   }
 `;
 
-// Endpoint to start
-app.get('/start/:fid', async (req, res) => {
-    console.log("### Starting server....")
+const processFid = async (fid) => {
     const pbURL = 'https://api.warpcast.com/v2/power-badge-users';
-    const userFid = parseInt(req.params.fid); // Accessing the fid parameter from the URL
-    let powerBadgeUsers; 
+    let powerBadgeUsers;
     try {
         const response = await axios.get(pbURL);
         powerBadgeUsers = response.data.result.fids; // Adjusting path to match actual response structure
     } catch (error) {
         console.error('Error fetching power badge users:', error);
-        res.status(500).send('Failed to fetch power badge users');
+        await client.set(`status:${fid}`, 'error')
     }
     let isPowerUser = powerBadgeUsers.includes(userFid);
     let openrankURL = 'https://graph.cast.k3l.io/scores/personalized/engagement/fids?k=3&limit=4999';
@@ -90,12 +89,38 @@ app.get('/start/:fid', async (req, res) => {
             let finalFid= fidsFromCasts[randomNumber]
             const matchingObject = filteredScores.find(score => score.fid == finalFid);
             console.log({...matchingObject, openRank: openRank, powerBadge: true})
-            res.json({...matchingObject, user: { openRank: openRank, powerBadge: true}})
+            await client.set(`data:${fid}`, JSON.stringify({...matchingObject, user: { openRank: openRank, powerBadge: true}}));
+            await client.set(`status:${fid}`, 'complete');
+            //res.json({...matchingObject, user: { openRank: openRank, powerBadge: true}})
     
         } catch (error) {
             console.error('Error fetching power badge users:', error);
-            res.status(500).send('Failed to fetch power badge users');
+            await client.set(`status:${fid}`, 'error')
+            //res.status(500).send('Failed to fetch power badge users');
         }
+}
+
+// Endpoint to start
+app.get('/start/:fid', async (req, res) => {
+    console.log("### Starting server....")
+    const userFid = parseInt(req.params.fid); // Accessing the fid parameter from the URL
+    const status = await client.get(`status:${userFid}`);
+    if(status === 'processing') {
+        res.json({status: status});
+    } else if(status === 'complete') {
+        // get data for user and convert back to json
+        const data = await client.get(`data:${userFid}`);
+        try {
+            const jsonData = JSON.parse(data);
+            res.json({...jsonData, status: status});
+        } catch (e) {
+            res.json({ status: 'error' });
+        }
+    } else {
+        await client.set(`status:${userFid}`, 'processing');
+        processFid(userFid);
+        res.json({ status: 'processing'});
+    }
 });
 
 app.get('/user-relevant-cast/:fid/:targetFid', async (req, res) => {
