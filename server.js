@@ -12,6 +12,7 @@ const client = redis.createClient({
     }
 });
 await client.connect();
+await client.flushDb();
 console.log(` / client open: ${client.isOpen}`);
 import axios from 'axios';
 import { init, fetchQuery } from "@airstack/node";
