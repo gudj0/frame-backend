@@ -49,20 +49,20 @@ const processFid = async (fid) => {
         console.error('Error fetching power badge users:', error);
         await client.set(`status:${fid}`, 'error')
     }
-    let isPowerUser = powerBadgeUsers.includes(userFid);
+    let isPowerUser = powerBadgeUsers.includes(fid);
     let openrankURL = 'https://graph.cast.k3l.io/scores/personalized/engagement/fids?k=3&limit=4999';
     let globalRankUrl = `https://graph.cast.k3l.io/scores/global/engagement/fids`;
     // If power badge user, fetch engagement scores 
     // isPowerUser = true 
         try {
-            const openRankResponse = await axios.post(globalRankUrl, [userFid], {
+            const openRankResponse = await axios.post(globalRankUrl, [fid], {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
             console.log(`openRankResult: ${JSON.stringify(openRankResponse?.data?.result)}`);
             const openRank = openRankResponse?.data?.result?.[0];
-            const engagementScores = await axios.post(openrankURL, [userFid], {
+            const engagementScores = await axios.post(openrankURL, [fid], {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -70,12 +70,12 @@ const processFid = async (fid) => {
             // Filter out power badge users from the engagement scores
             let filteredScores
             if (isPowerUser){
-                console.log("Fid", userFid, "is a poweruser");
+                console.log("Fid", fid, "is a poweruser");
                 filteredScores = engagementScores.data.result.filter(score => 
                     !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
                 );
             } else {
-                console.log("Fid", userFid, "is not a poweruser... fetching power users that are highly engaging");
+                console.log("Fid", fid, "is not a poweruser... fetching power users that are highly engaging");
                 filteredScores = engagementScores.data.result.filter(score => 
                     powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
                 );
