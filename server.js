@@ -22,35 +22,56 @@ app.get('/start/:fid', async (req, res) => {
         console.error('Error fetching power badge users:', error);
         res.status(500).send('Failed to fetch power badge users');
     }
-    console.log(powerBadgeUsers);
     let isPowerUser = powerBadgeUsers.includes(userFid);
-    let openrankURL 
+    let openrankURL = 'https://graph.cast.k3l.io/scores/personalized/engagement/fids?k=3&limit=4999';
 
     // If power badge user, fetch engagement scores 
-    isPowerUser = true
+    // isPowerUser = true 
     if (isPowerUser){
         console.log("Fid", userFid, "is a poweruser");
-        openrankURL = 'https://graph.cast.k3l.io/scores/personalized/engagement/fids?k=2&limit=4999';
         try {
             const engagementScores = await axios.post(openrankURL, [userFid], {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });    
-            console.log(engagementScores.data.result)   
             // Filter out power badge users from the engagement scores
             const filteredScores = engagementScores.data.result.filter(score => 
                 !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
             );
-            res.json(filteredScores[5]);
+            console.log("Length of filtered scored:", filteredScores.length);
+            const randomNumber = Math.floor(Math.random() * filteredScores.length) + 2;
+            const fids = filteredScores.map(item => item.fid);
+            
+            console.log(fids.slice(0,100).sort((a, b) => a - b));
+            console.log(fids.slice(100,200).sort((a, b) => a - b));
+            console.log(fids.slice(200,300).sort((a, b) => a - b));
+            res.json(filteredScores[randomNumber]); // we select 3 as to make some randomness
         } catch (error) {
             console.error('Error fetching power badge users:', error);
             res.status(500).send('Failed to fetch power badge users');
         }
     } else {
-        console.log("Fid", userFid, "is not a poweruser");
+        console.log("Fid", userFid, "is not a poweruser... fetching normal users that are highly engaging");
+        try {
+            console.log("Fetch engagementscores")
+            const engagementScores = await axios.post(openrankURL, [userFid], {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log("Make random")
+            result = engagementScores.data.result
+            const randomNumber = Math.floor(Math.random() * result.length/20) + 2;
+            console.log("length of result:", result.length)
+            console.log("randomnum:", randomNumber)
+            console.log("engagementscores[0]:", result[randomNumber])
+            res.json(Object.assign({}, result[randomNumber]));
+        } catch (error) {
+            console.error('Error fetching power badge users:', error);
+            res.status(500).send('Failed to fetch power badge users');
+        }
     }
-    res.send('Welcome, Power User!');
 });
 
 app.listen(port, () => {
