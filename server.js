@@ -28,7 +28,6 @@ const graphqlQuery = `
   }
 `;
 
-
 // Endpoint to start
 app.get('/start/:fid', async (req, res) => {
     console.log("### Starting server....")
@@ -44,10 +43,12 @@ app.get('/start/:fid', async (req, res) => {
     }
     let isPowerUser = powerBadgeUsers.includes(userFid);
     let openrankURL = 'https://graph.cast.k3l.io/scores/personalized/engagement/fids?k=3&limit=4999';
-
+    let globalRankUrl = `https://graph.cast.k3l.io/scores/global/engagement/fids`;
     // If power badge user, fetch engagement scores 
     // isPowerUser = true 
         try {
+            const openRankResponse = await axios.post(globalRankUrl, [userFid]);
+            const openRank = openRankResponse?.result[0]?.response
             const engagementScores = await axios.post(openrankURL, [userFid], {
                 headers: {
                     'Content-Type': 'application/json'
@@ -83,8 +84,8 @@ app.get('/start/:fid', async (req, res) => {
             randomNumber = Math.floor(Math.random() * fidsFromCasts.length/2) + 2;
             let finalFid= fidsFromCasts[randomNumber]
             const matchingObject = filteredScores.find(score => score.fid == finalFid);
-            console.log(matchingObject)
-            res.json(matchingObject)
+            console.log({...matchingObject, openRank: openRank, powerBadge: true})
+            res.json({...matchingObject, openRank: openRank, powerBadge: true})
     
         } catch (error) {
             console.error('Error fetching power badge users:', error);
@@ -92,7 +93,7 @@ app.get('/start/:fid', async (req, res) => {
         }
 });
 
-app.get('/user-relevant-cast/:fid', async (req, res) => {
+app.get('/user-relevant-cast/:fid/:targetFid', async (req, res) => {
     const userDoc = db.collection('openrank-farhack').doc(req.params.fid);
     const userDocData = (await userDoc.get())?.data();
     if (userDocData && userDocData.cast) {
