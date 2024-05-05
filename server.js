@@ -47,8 +47,6 @@ app.get('/start/:fid', async (req, res) => {
 
     // If power badge user, fetch engagement scores 
     // isPowerUser = true 
-    if (isPowerUser){
-        console.log("Fid", userFid, "is a poweruser");
         try {
             const engagementScores = await axios.post(openrankURL, [userFid], {
                 headers: {
@@ -56,9 +54,18 @@ app.get('/start/:fid', async (req, res) => {
                 }
             });    
             // Filter out power badge users from the engagement scores
-            const filteredScores = engagementScores.data.result.filter(score => 
-                !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
-            );
+            let filteredScores
+            if (isPowerUser){
+                console.log("Fid", userFid, "is a poweruser");
+                filteredScores = engagementScores.data.result.filter(score => 
+                    !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
+                );
+            } else {
+                console.log("Fid", userFid, "is not a poweruser... fetching power users that are highly engaging");
+                filteredScores = engagementScores.data.result.filter(score => 
+                    powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
+                );
+            }
             let randomNumber = Math.floor(Math.random() * filteredScores.length) + 2;
             const fids = filteredScores.map(item => `fc_fid:${item.fid}`);
             
@@ -73,7 +80,7 @@ app.get('/start/:fid', async (req, res) => {
             const data = await fetchQuery(graphqlQuery, variables);
             const casts = data.data.FarcasterCasts.Cast;
             const fidsFromCasts = casts.map(cast => cast.fid);
-            randomNumber = Math.floor(Math.random() * fidsFromCasts.length) + 2;
+            randomNumber = Math.floor(Math.random() * fidsFromCasts.length/2) + 2;
             let finalFid= fidsFromCasts[randomNumber]
             const matchingObject = filteredScores.find(score => score.fid == finalFid);
             console.log(matchingObject)
@@ -83,26 +90,6 @@ app.get('/start/:fid', async (req, res) => {
             console.error('Error fetching power badge users:', error);
             res.status(500).send('Failed to fetch power badge users');
         }
-    } else {
-        console.log("Fid", userFid, "is not a poweruser... fetching power users that are highly engaging");
-        try {
-            console.log("Fetch engagementscores")
-            const engagementScores = await axios.post(openrankURL, [userFid], {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            // Filter out power badge users from the engagement scores
-            const filteredScores = engagementScores.data.result.filter(score => 
-                !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
-            );
-            const randomNumber = Math.floor(Math.random() * filteredScores.length/20) + 2;
-            res.json(Object.assign({}, filteredScores[randomNumber]));
-        } catch (error) {
-            console.error('Error fetching power badge users:', error);
-            res.status(500).send('Failed to fetch power badge users');
-        }
-    }
 });
 
 app.get('/user-relevant-cast/:fid', async (req, res) => {
