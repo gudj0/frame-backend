@@ -59,8 +59,7 @@ app.get('/start/:fid', async (req, res) => {
             const filteredScores = engagementScores.data.result.filter(score => 
                 !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
             );
-            console.log("Length of filtered scored:", filteredScores.length);
-            const randomNumber = Math.floor(Math.random() * filteredScores.length) + 2;
+            let randomNumber = Math.floor(Math.random() * filteredScores.length) + 2;
             const fids = filteredScores.map(item => `fc_fid:${item.fid}`);
             
             const now = new Date(); // Current date and time
@@ -73,9 +72,13 @@ app.get('/start/:fid', async (req, res) => {
             };
             const data = await fetchQuery(graphqlQuery, variables);
             const casts = data.data.FarcasterCasts.Cast;
-            console.log(casts);
-            console.log("length of casts:", casts.length)
-            res.json(filteredScores[randomNumber]); // we select 3 as to make some randomness
+            const fidsFromCasts = casts.map(cast => cast.fid);
+            randomNumber = Math.floor(Math.random() * fidsFromCasts.length) + 2;
+            let finalFid= fidsFromCasts[randomNumber]
+            const matchingObject = filteredScores.find(score => score.fid == finalFid);
+            console.log(matchingObject)
+            res.json(matchingObject)
+    
         } catch (error) {
             console.error('Error fetching power badge users:', error);
             res.status(500).send('Failed to fetch power badge users');
@@ -94,9 +97,6 @@ app.get('/start/:fid', async (req, res) => {
                 !powerBadgeUsers.includes(score.fid) // Assuming each score object has an 'fid' property
             );
             const randomNumber = Math.floor(Math.random() * filteredScores.length/20) + 2;
-            console.log("length of result:", filteredScores.length)
-            console.log("randomnum:", randomNumber)
-            console.log("filteredScores[0]:", filteredScores[randomNumber])
             res.json(Object.assign({}, filteredScores[randomNumber]));
         } catch (error) {
             console.error('Error fetching power badge users:', error);
