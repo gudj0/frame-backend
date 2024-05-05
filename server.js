@@ -48,6 +48,7 @@ app.get('/start/:fid', async (req, res) => {
     // isPowerUser = true 
         try {
             const openRankResponse = await axios.post(globalRankUrl, [userFid]);
+            console.log(`openRankResult: ${JSON.stringify(openRankResponse)}`)
             const openRank = openRankResponse?.result[0]?.response
             const engagementScores = await axios.post(openrankURL, [userFid], {
                 headers: {
