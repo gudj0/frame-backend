@@ -3,6 +3,7 @@ import { db } from './firebase.js';
 const app = express();
 const port = 3000;
 
+app.use(cors());
 // Middleware to check if the user is a power user
 function checkPowerUser(req, res, next) {
     // This is a placeholder; implement your actual logic here
