@@ -1,13 +1,15 @@
 
 # @name GetNonPowerBadgeUser
-GET {{hostname}}/start/309
+GET {{hostname}}/start/{{non_power_badge_fid}}
 
 ###
 
 # @name GetPowerBadgeUser
-GET {{hostname}}/start/3
+GET {{hostname}}/start/{{power_badge_fid}}
 
 ### 
 
+@power_badge_fid=3
+@non_power_badge_fid=309
 @hostname=http://localhost:3000
 # @hostname https://frame-backend-production.up.railway.app
