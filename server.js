@@ -98,8 +98,8 @@ const processFid = async (fid) => {
             randomNumber = Math.floor(Math.random() * fidsFromCasts.length/2) + 2;
             let finalFid= fidsFromCasts[randomNumber]
             const matchingObject = filteredScores.find(score => score.fid == finalFid);
-            console.log({...matchingObject, openRank: openRank, powerBadge: true})
-            await client.set(`data:${fid}`, JSON.stringify({...matchingObject, user: { openRank: openRank, powerBadge: true}}));
+            console.log({...matchingObject, openRank: openRank, powerBadge: isPowerUser})
+            await client.set(`data:${fid}`, JSON.stringify({...matchingObject, user: { openRank: openRank, powerBadge: isPowerUser}}));
             await client.set(`status:${fid}`, 'complete');
             //res.json({...matchingObject, user: { openRank: openRank, powerBadge: true}})
     
