@@ -52,7 +52,7 @@ app.get('/start/:fid', async (req, res) => {
                     'Content-Type': 'application/json'
                 }
             });
-            console.log(`openRankResult: ${JSON.stringify(openRankResponse)}`)
+            console.log(`openRankResult: ${openRankResponse?.result}`)
             const openRank = openRankResponse?.result?.[0]?.response
             const engagementScores = await axios.post(openrankURL, [userFid], {
                 headers: {
