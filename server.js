@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 // import { db } from './firebase.js';
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;  // Ensure using PORT from environment in production
 import axios from 'axios';
 import { init, fetchQuery } from "@airstack/node";
 console.log("### API KEY:", process.env.AIRSTACK_API_KEY)
@@ -114,6 +114,6 @@ app.get('/user-relevant-cast/:fid', async (req, res) => {
     }
 });
 
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
