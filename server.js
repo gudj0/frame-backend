@@ -120,7 +120,7 @@ app.get('/start/:fid', async (req, res) => {
     // if action is "start", start a fresh pull for user, reset the status and data for fid
     if(action === 'start') {
         await client.set(`status:${userFid}`, 'processing');
-        await client.set(`data:${userFid}`, null);
+        await client.del(`data:${userFid}`);
     }
 
     const status = await client.get(`status:${userFid}`);
