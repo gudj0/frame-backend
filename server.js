@@ -43,6 +43,7 @@ const processFid = async (fid) => {
     const pbURL = 'https://api.warpcast.com/v2/power-badge-users';
     let powerBadgeUsers;
     console.log(`STARTING PROCESSING FID: ${fid}`);
+    
     try {
         const response = await axios.get(pbURL);
         powerBadgeUsers = response.data.result.fids; // Adjusting path to match actual response structure
@@ -115,6 +116,13 @@ app.get('/start/:fid', async (req, res) => {
     console.log("### Starting server....")
     console.log(`client open? ${client.isOpen}`);
     const userFid = parseInt(req.params.fid); // Accessing the fid parameter from the URL
+    const action = req.query.action;
+    // if action is "start", start a fresh pull for user, reset the status and data for fid
+    if(action === 'start') {
+        await client.set(`status:${userFid}`, 'processing');
+        await client.set(`data:${userFid}`, null);
+    }
+
     const status = await client.get(`status:${userFid}`);
     console.log(`STATUS RETURNED: ${status}`);
     if(status === 'processing') {
