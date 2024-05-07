@@ -118,6 +118,7 @@ app.get('/start/:fid', async (req, res) => {
     const userFid = parseInt(req.params.fid); // Accessing the fid parameter from the URL
     const action = req.query.action;
     // if action is "start", start a fresh pull for user, reset the status and data for fid
+    console.log(`ACTION: ${action}`)
     if(action === 'start') {
         await client.del(`status:${userFid}`);
         await client.del(`data:${userFid}`);
